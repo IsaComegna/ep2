@@ -139,8 +139,8 @@ int main (){ //teste inicial
     printf ("Teste a4) Antitransformada utilizando FFT recursiva \n");
     printf ("F(x): \n");
     double complex *F3 = (double complex *)malloc(2*n * sizeof(double complex));
-    fftrec(c2, F3, n, 0);
-    imprimeVetorComplx(F3, 2*n);
+    fftrec(F, c2, n, 0);
+    imprimeVetorComplx(F, 2*n);
 
 
     n = 8;
