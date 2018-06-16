@@ -4,8 +4,8 @@
 # include <time.h>
 # include "fftpack4.h"
 # include "fftpack4_precision.h"
-#include "fftpack4_prb.h"
-
+/*
+int main ( );
 
 void test04 ( );
 void r8vec_print_part ( int n, double a[], int max_print, char *title );
@@ -13,95 +13,9 @@ double *r8vec_uniform_01_new ( int n, int *seed );
 void rr8vec_print_part ( int n, double a[], int max_print, char *title );
 double *rr8vec_uniform_01_new ( int n, int *seed );
 void timestamp ( );
-
-/******************************************************************************/
-
-/******************************************************************************/
-
-void test04 ( )
-
-/******************************************************************************/
-/*
-  Purpose: TEST04 tests EZFFTB, EZFFTF, EZFFTI.
-
-  Licensing:  This code is distributed under the GNU LGPL license.
-
-  Modified:  21 May 2013
-
-  Author:  John Burkardt
 */
-{
-  double *a;
-  double azero;
-  double *b;
-  int i;
-  int *ifac;
-  int n = 4096;
-  int nh;
-  int seed;
-  double *wsave;
-  double *x;
 
-  printf ( "\n" );
-  printf ( "TEST04\n" );
-  printf ( "  For real fast Fourier transform,\n" );
-  printf ( "  EZFFTI initializes the transform.\n" );
-  printf ( "  EZFFTF does a forward transform;\n" );
-  printf ( "  EZFFTB does a backward transform.\n" );
-  printf ( "\n" );
-  printf ( "  The number of data items is N = %d\n", n );
-/*
-  Set the data values.
-*/
-  seed = 1973;
 
-  x = r8vec_uniform_01_new ( n, &seed );
-
-  r8vec_print_part ( n, x, 10, "  The original data:" );
-/*
-  Initialize the WSAVE array.
-*/
-  wsave = ( double * ) malloc ( ( 3 * n + 15 ) * sizeof ( double ) );
-  ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
-
-  ezffti ( &n, wsave, ifac );
-/*
-  Compute FFT
-*/
-  nh = n / 2;
-  a = ( double * ) malloc ( nh * sizeof ( double ) );
-  b = ( double * ) malloc ( nh * sizeof ( double ) );
-
-  ezfftf ( &n, x, &azero, a, b, wsave, ifac );
-
-  printf ( "\n" );
-  printf ( "  The A0 coefficient:\n" );
-  printf ( "\n" );
-  printf ( "  %g\n", azero );
-
-  r8vec_print_part ( n/2, a, 10, "  The A coefficients:" );
-
-  r8vec_print_part ( n/2, b, 10, "  The B coefficients:" );
-/*
-  Now compute inverse FFT of coefficients.  Should get back the
-  original data.  First destroy original data so we're sure
-  that the routine had to recreate them!
-*/
-  printf ( "\n" );
-  printf ( "  Retrieve data from FFT coeficients.\n" );
-
-  ezfftb ( &n, x, &azero, a, b, wsave, ifac );
-
-  r8vec_print_part ( n, x, 10, "  The retrieved data:" );
-
-  free ( a );
-  free ( b );
-  free ( ifac );
-  free ( wsave );
-  free ( x );
-
-  return;
-}
 void r8vec_print_part ( int n, double a[], int max_print, char *title )
 
 /******************************************************************************/
@@ -534,4 +448,145 @@ void timestamp ( void )
 
   return;
 # undef TIME_SIZE
+}
+
+
+void test04 ( )
+
+/******************************************************************************/
+/*
+  Purpose:
+
+    TEST04 tests EZFFTB, EZFFTF, EZFFTI.
+
+  Licensing:
+
+    This code is distributed under the GNU LGPL license.
+
+  Modified:
+
+    21 May 2013
+
+  Author:
+
+    John Burkardt
+*/
+{
+  double *a;
+  double azero;
+  double *b;
+  int i;
+  int *ifac;
+  int n = 4096;
+  int nh;
+  int seed;
+  double *wsave;
+  double *x;
+
+  printf ( "\n" );
+  printf ( "TEST04\n" );
+  printf ( "  For real fast Fourier transform,\n" );
+  printf ( "  EZFFTI initializes the transform.\n" );
+  printf ( "  EZFFTF does a forward transform;\n" );
+  printf ( "  EZFFTB does a backward transform.\n" );
+  printf ( "\n" );
+  printf ( "  The number of data items is N = %d\n", n );
+/*
+  Set the data values.
+*/
+  seed = 1973;
+
+  x = r8vec_uniform_01_new ( n, &seed );
+
+  r8vec_print_part ( n, x, 10, "  The original data:" );
+/*
+  Initialize the WSAVE array.
+*/
+  wsave = ( double * ) malloc ( ( 3 * n + 15 ) * sizeof ( double ) );
+  ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
+
+  ezffti ( &n, wsave, ifac );
+/*
+  Compute FFT
+*/
+  nh = n / 2;
+  a = ( double * ) malloc ( nh * sizeof ( double ) );
+  b = ( double * ) malloc ( nh * sizeof ( double ) );
+
+  ezfftf ( &n, x, &azero, a, b, wsave, ifac );
+
+  printf ( "\n" );
+  printf ( "  The A0 coefficient:\n" );
+  printf ( "\n" );
+  printf ( "  %g\n", azero );
+
+  r8vec_print_part ( n/2, a, 10, "  The A coefficients:" );
+
+  r8vec_print_part ( n/2, b, 10, "  The B coefficients:" );
+/*
+  Now compute inverse FFT of coefficients.  Should get back the
+  original data.  First destroy original data so we're sure
+  that the routine had to recreate them!
+*/
+  printf ( "\n" );
+  printf ( "  Retrieve data from FFT coeficients.\n" );
+
+  ezfftb ( &n, x, &azero, a, b, wsave, ifac );
+
+  r8vec_print_part ( n, x, 10, "  The retrieved data:" );
+
+  free ( a );
+  free ( b );
+  free ( ifac );
+  free ( wsave );
+  free ( x );
+
+  return;
+}
+/*************************************************************************/
+
+
+int main ( )
+
+/******************************************************************************/
+/*
+  Purpose:
+
+    MAIN is the main program for FFTPACK4_PRB.
+
+  Discussion:
+
+    FFTPACK4_PRB tests the FFTPACK4 library.
+
+  Licensing:
+
+    This code is distributed under the GNU LGPL license.
+
+  Modified:
+
+    21 May 2013
+
+  Author:
+
+    John Burkardt
+*/
+{
+  timestamp ( );
+  printf ( "\n" );
+  printf ( "FFTPACK4_PRB:\n" );
+  printf ( "  C version\n" );
+  printf ( "  Test the FFTPACK4 library.\n" );
+
+
+  test04 ( );
+/*
+  Terminate.
+*/
+  printf ( "\n" );
+  printf ( "FFTPACK4_PRB\n" );
+  printf ( "  Normal end of execution.\n" );
+  printf ( "\n" );
+  timestamp ( );
+
+  return 0;
 }

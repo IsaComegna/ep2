@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "fftpack4.h"
-#include "fftpack4_prb.h"
+
 
 void imprimeVetor (double *vetor, int n){ //imprime vetor de tamanho n;
     int i;
@@ -54,32 +54,38 @@ void fftrec(double complex *c, double complex *f, int n, bool dir){
     double complex *odd = (double complex *)malloc(n * sizeof(double complex));
     double complex *fe = (double complex *)malloc(n * sizeof(double complex));
     double complex *fo = (double complex *)malloc(n * sizeof(double complex));
+    double complex eij_int;
     double complex eij;
     int j;
+    float nn = (float)n;
 
     if (n==1){
-        c[0] = f[0] + f[1];
-        c[1] = f[0] - f[1];
-    }
-    else {
-        for (j=0;j<n-1;j++){
-            fe[j]=f[2*j];
-            fo[j]=f[2*j+1];
-        }
-        fftrec(even,fe, n/2, dir);
-        fftrec(odd, fo, n/2, dir);
-        for (j=0;j<n-1;j++){
-            if (dir){
-                eij = cpow(M_E, (-I*j*M_PI)/n);
-            }
-            else{
-                eij = cpow(M_E, (I*j*M_PI)/n);
-            }
-            c[j] = even[j]+eij*odd[j];
-            c[j+n] = even[j]-eij*odd[j];
-        }
-    }
+       c[0] = f[0] + f[1];
+       c[1] = f[0] - f[1];
+   }
+   else {
+       for (j=0;j<n;j++){
+           fe[j]=f[2*j];
+           fo[j]=f[2*j+1];
+       }
+       fftrec(even,fe, n/2, dir);
+       fftrec(odd, fo, n/2, dir);
+       for (j=0;j<n;j++){
+           if (dir){
+               eij = cpow(M_E, (-I*j*M_PI)/nn);
+               //printf("%le",((I*j*M_PI)/nn));
+           }
+           else{
+               eij = cpow(M_E, (I*j*M_PI)/nn);
+                //printf("\n %le",  M_PI);
+               //printf("%le",(I*j));
+           }
+           c[j] = even[j]+eij*odd[j];
+           c[j+n] = even[j]-eij*odd[j];
+       }
+   }
 }
+
 
 int main (){ //teste inicial
 
@@ -124,7 +130,7 @@ int main (){ //teste inicial
     printf ("Ck's: \n");
     double complex *c2 = (double complex *)malloc(2*n * sizeof(double complex));
     fftrec(c2, F, n, 1);
-    for (j=0;j<2*n;j++){
+    for (j=0;j<2*n;j++){   //dividir por 2n pra normalizar, faz caso for transformação direta
         c2[j] = c2[j]/(2*n);
     }
     imprimeVetorComplx(c2, 2*n);
@@ -153,8 +159,54 @@ int main (){ //teste inicial
 
     printf ("Teste b) Comparação com rotinas FFTPACK4 \n");
     printf ("F(x): \n");
-    printf("ba \n");
-    test04();
+
+
+    //test04();
+    double *a;//array de numeros reais contendo as partes reais dos coef. complexos de fourier,
+                //se n é impar, b tem tamanhao n/2, senao tamanho (n-1)/2
+
+    double azero; //constante de fourier A0
+    double *b; //array de numeros reais contendo as partes imaginarias dos coef. complexos de fourier,
+                //se n é impar, b tem tamanhao n/2, senao tamanho (n-1)/2
+    int *ifac;
+    n = 8; //tamanho da sequencia
+    int nh; //tamanho de a e b, dependendo se n é par ou nao
+    //int seed;
+    double *wsave; //work array inicializado pelo ezffti
+    double *xx = (double *)malloc(2*n * sizeof(double));
+
+    xx[0] = 6;
+    xx[1] = 2;
+    xx[2] = 5;
+    xx[3] = 2;
+    xx[4] = 11;
+    xx[5] = 2;
+    xx[6] = 8;
+    xx[7] = 8;
+
+    wsave = ( double * ) malloc ( ( 3 * n + 15 ) * sizeof ( double ) );
+    ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
+    ezffti ( &n, wsave, ifac );
+    imprimeVetorComplx(xx, 8);
+    //r8vec_print_part ( n, x, 10, "  The original data:" );
+    nh = n / 2;
+    a = ( double * ) malloc ( nh * sizeof ( double ) );
+    b = ( double * ) malloc ( nh * sizeof ( double ) );
+    ezfftf ( &n, xx, &azero, a, b, wsave, ifac );
+    printf ( "\n" );
+    printf ( "  The A0 coefficient:\n" );
+    printf ( "\n" );
+    printf ( "  %g\n", azero );
+    r8vec_print_part ( n/2, a, n, "  The A coefficients:" );
+    r8vec_print_part ( n/2, b, n, "  The B coefficients:" );
+    printf ( "\n" );
+    printf ( "  Retrieve data from FFT coeficients.\n" );
+    ezfftb ( &n, x, &azero, a, b, wsave, ifac );
+    r8vec_print_part ( n, x, n, " The retrieved data:" );
+
+    timestamp();
+
+
 
     return 0;
 }
