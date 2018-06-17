@@ -206,7 +206,6 @@ void compressao(double complex *c, double rate, int tam){
 
 }
 
-
 void testeA (){
     int i, n,k,j = 0;
     n = 2;
@@ -280,20 +279,20 @@ void calcularX (double complex *x, int tam){ //calcula o vetor x a partir do tam
 }
 
 void fttpack4Cks(double complex *c, double A0, double *A, double *B, int n){
-    /* ak = Ak + i*Bk */
-
-    double complex *ak = (double complex *)malloc(n * sizeof(double complex));
+    /* neste caso, n=2N;
+      tem-se que: c(k) = a(k), k=0,1,...,N e c(2N-k)= a(_k), k=1,...,N-1 */
 
     c[0] = A0;
-/*
-    for (int i=1; i<n;i++){
-
-    }*/
-
-/*    printf("to aqui moms \n");
-    imprimeVetorComplx(c, n);
-    printf("\n\n");*/
-
+    for(int i=0; i<(n/2); i++){
+        if ((i+1)!=n/2){
+            c[i+1] = A[i]/2 - I*B[i]/2;
+        } else {
+            c[i+1] = A[i] + I*B[i];
+        }
+    }
+    for(int i=1; i<=((n/2)-1); i++ ){
+        c[n-i] = A[i-1]/2 + I*B[i-1]/2;
+    }
 }
 
 void testeB() {
@@ -314,6 +313,7 @@ void testeB() {
     F[5] = 2;
     F[6] = 8;
     F[7] = 8;
+
 
     fourier(F, x, c, n); //calcula a transformada de fourier e coloca os ck's no vetor c
 
@@ -354,8 +354,6 @@ void testeB() {
     //double *xb = (double *)malloc(2*n * sizeof(double)); //x
     double *Fb = (double *)malloc(2*n * sizeof(double)); //F(x)
     //double complex *cs = (double complex *)malloc(2*n * sizeof(double complex)); //ck
-
-
     Fb[0] = 6;
     Fb[1] = 2;
     Fb[2] = 5;
@@ -364,6 +362,16 @@ void testeB() {
     Fb[5] = 2;
     Fb[6] = 8;
     Fb[7] = 8;
+/*
+    Fb[0]=5;
+    Fb[1]=-1;
+    Fb[2]=3;
+    Fb[3]=1;
+    /*
+    Fb[4] = 0;
+    Fb[5] = 0;
+    Fb[6] = 0;
+    Fb[7] = 0;*/
 
     printf ("Teste b5) Transformada de Fourier utilizando a rotina do FFTPACK4 \n");
     double *a;//array de numeros reais contendo as partes reais dos coef. complexos de fourier,
@@ -378,13 +386,10 @@ void testeB() {
     a = ( double * ) malloc ( (n/2) * sizeof ( double ) );
     b = ( double * ) malloc ( (n/2) * sizeof ( double ) );
     n=8;
-
+    //n=4;
     r8vec_print_part ( n, Fb, n, "F(x)" );
-
     ezffti ( &n, wsave, ifac ); //inicialização para funções a serem utilizadas
-
     ezfftf ( &n, Fb, &azero, a, b, wsave, ifac ); //calculo da transformada
-
     printf ( "\n" );
     printf ( "  Coeficiente A0: %g \n", azero);
     r8vec_print_part ( n/2, a, 10, "  Coeficientes A:" );
@@ -395,8 +400,10 @@ void testeB() {
     ezfftb ( &n, Fb, &azero, a, b, wsave, ifac );
     r8vec_print_part ( n, Fb, n, " The retrieved data:" );
 
- //  fttpack4Cks(c, azero,a, b, n);
-//    imprimeVetorComplx(c, n*2);
+    fttpack4Cks(c, azero,a, b, n);
+    printf("cks: \n");
+    imprimeVetorComplx(c, n);
+    printf("\n");
 
 
 
@@ -448,10 +455,10 @@ int main (){ //teste inicial
     printf ("---- TESTE B ----  \n \n");
     testeB();
     system("pause");
-
+/*
     printf ("---- TESTE C ----  \n \n");
     testeC();
-    system("pause");
+    system("pause");*/
 
 
     return 0;
