@@ -87,6 +87,125 @@ void fftrec(double complex *c, double complex *f, int n, bool dir){
 }
 
 
+void pegarDados(double complex *c1, double complex *c2, double complex *x, int tam, char *nome, int *ncanais, int *sampleRate){ //pega os dados do arquivo de dados e preenche x, c1, c2 e armazena ncanais e sampleRate
+
+    FILE *arq = fopen (nome, "r");
+    char c[10];
+    int i=0;
+
+    fscanf(arq, "%s", &c); //ponto e virgula
+    fscanf(arq, "%s", &c); //Sample
+    fscanf(arq, "%s", &c); //Rate
+    fscanf(arq, "%d", sampleRate);
+    fscanf(arq, "%s", &c); //ponto e virgula
+    fscanf(arq, "%s", &c); //Channels
+    fscanf(arq, "%d", ncanais);
+
+    for (i=0;i<tam;i++){
+        fscanf(arq, "%lf", &x[i]);
+        fscanf(arq, "%lf", &c1[i]);
+        if (*ncanais == 2){
+            fscanf(arq, "%lf", &c2[i]);
+        }
+    }
+
+    fclose(arq);
+
+}
+
+int calcQtdDados(char *nome){    //calcula a quantidade de dados no arquivo com nome "nome"
+
+    FILE *arq = fopen (nome, "r");
+    int tam = 0;
+    char c[10];
+    double aux =0;
+
+
+    fscanf(arq, "%s", &c); //ponto e virgula
+    fscanf(arq, "%s", &c); //Sample
+    fscanf(arq, "%s", &c); //Rate
+    fscanf(arq, "%lf", &aux);
+    fscanf(arq, "%s", &c); //ponto e virgula
+    fscanf(arq, "%s", &c); //Channels
+    fscanf(arq, "%lf", &aux);
+
+    while (!feof(arq)){
+        fscanf(arq, "%lf", &aux);
+        fscanf(arq, "%lf", &aux);
+        fscanf(arq, "%lf", &aux);
+        tam++;
+    }
+    fclose(arq);
+    tam--;
+
+    return tam;
+}
+
+void imprimirDados(double complex *c1, double complex *c2, double complex *x, int tam, char *nome, int ncanais, int sampleRate){
+
+    FILE *arq = fopen (nome, "w");
+
+    fprintf(arq, "%s ", ";");
+    fprintf(arq, "%s", "Sample Rate ");
+    fprintf(arq, "%d", sampleRate);
+    fprintf (arq, "\n%s ", ";");
+    fprintf (arq, "%s", "Channels ");
+    fprintf (arq, "%d", ncanais);
+    fprintf (arq, "\n");
+    int i;
+    for (i=0;i<tam;i++){
+        fprintf(arq, "%lf ", creal(x[i]));
+        fprintf(arq, "%lf ", creal(c1[i]));
+        if (ncanais == 1){
+            fprintf(arq, "\n");
+        }
+        else {
+            fprintf(arq, "%lf \n", creal(c2[i]));
+        }
+    }
+
+}
+
+void fPassaBaixas(double complex *c, int k, int tam){
+    int i;
+
+    for (i=k+1;i<tam;i++){
+        c[i] = 0;
+    }
+}
+
+void fPassaAltas(double complex *c, int k, int tam){
+    int i;
+    for (i=k-1;i>0;i--){
+        c[i] = 0;
+    }
+}
+
+void fPassaBandas(double complex *c, int k1, int k2, int tam){
+
+    int i;
+    for (i=k1-1;i>0;i--){
+        c[i] = 0;
+    }
+    for (i=k2+1;i<tam;i++){
+        c[i] = 0;
+    }
+}
+
+void compressao(double complex *c, double rate, int tam){
+
+    int i;
+    double amp = 0;
+
+    for (i=0;i<tam;i++){
+        amp = 2*cabs(c[i]);
+        if (amp < rate){
+            c[i] = 0;
+        }
+    }
+
+}
+
 
 void testeA (){
     int i, n,k,j = 0;
