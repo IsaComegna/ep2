@@ -6,8 +6,13 @@
 # include "fftpack4_precision.h"
 #include "fftpack4_prb.h"
 
-
+void test01 ( );
+void test02 ( );
+void test03 ( );
 void test04 ( );
+void test05 ( );
+void test06 ( );
+void test07 ( );
 void r8vec_print_part ( int n, double a[], int max_print, char *title );
 double *r8vec_uniform_01_new ( int n, int *seed );
 void rr8vec_print_part ( int n, double a[], int max_print, char *title );
@@ -18,17 +23,270 @@ void timestamp ( );
 
 /******************************************************************************/
 
+void test01 ( )
+
+/******************************************************************************/
+/*
+  Purpose:
+
+    TEST01 tests CFFTB, CFFTF, CFFTI.
+
+  Licensing:
+
+    This code is distributed under the GNU LGPL license.
+
+  Modified:
+
+    22 May 2013
+
+  Author:
+
+    John Burkardt
+*/
+{
+  int i;
+  int *ifac;
+  int j;
+  int n = 4096;
+  int seed;
+  double *wsave;
+  double *x;
+
+  printf ( "\n" );
+  printf ( "TEST01\n" );
+  printf ( "  For complex fast Fourier transform,\n" );
+  printf ( "  CFFTI initializes the transform,\n" );
+  printf ( "  CFFTF does a forward transform;\n" );
+  printf ( "  CFFTB does a backward transform.\n" );
+  printf ( "\n" );
+  printf ( "  The number of data items is N = %d\n", n );
+/*
+  Set the data values.
+*/
+  seed = 1973;
+
+  x = rr8vec_uniform_01_new ( n, &seed );
+
+  for ( i = 0; i < n; i++ )
+  {
+    for ( j = 0; j < 2; j++ )
+    {
+      x[i*2+j] = 5.0 * x[i*2+j];
+    }
+  }
+
+  rr8vec_print_part ( n, x, 10, "  The original data:" );
+/*
+  Initialize the WSAVE array.
+*/
+  ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
+  wsave = ( double * ) malloc ( ( 4 * n + 15 ) * sizeof ( double ) );
+
+  cffti ( &n, wsave, ifac );
+/*
+  Compute the FFT coefficients.
+*/
+  cfftf ( &n, x, wsave, ifac );
+
+  rr8vec_print_part ( n, x, 10, "  The FFT coefficients:" );
+/*
+  Now compute inverse FFT of coefficients.  Should get back the
+  original data.
+*/
+  cfftb ( &n, x, wsave, ifac );
+
+  for ( i = 0; i < n; i++ )
+  {
+    for ( j = 0; j < 2; j++ )
+    {
+      x[i*2+j] = x[i*2+j] / ( double ) ( n );
+    }
+  }
+
+  rr8vec_print_part ( n, x, 10, "  The retrieved data:" );
+
+  free ( ifac );
+  free ( wsave );
+  free ( x );
+
+  return;
+}
+/******************************************************************************/
+
+void test02 ( )
+
+/******************************************************************************/
+/*
+  Purpose:
+
+    TEST02 tests COSQB, COSQF, COSQI.
+
+  Licensing:
+
+    This code is distributed under the GNU LGPL license.
+
+  Modified:
+
+    26 March 2009
+
+  Author:
+
+    John Burkardt
+*/
+{
+  int i;
+  int *ifac;
+  int n = 4096;
+  int seed;
+  double *wsave;
+  double *x;
+
+  printf ( "\n" );
+  printf ( "TEST02\n" );
+  printf ( "  For real fast cosine quarter wave transform,\n" );
+  printf ( "  COSQI initializes the transform.\n" );
+  printf ( "  COSQF does a forward transform;\n" );
+  printf ( "  COSQB does a backward transform.\n" );
+  printf ( "\n" );
+  printf ( "  The number of data items is N = %d\n", n );
+
+  ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
+  wsave = ( double * ) malloc ( ( 3 * n + 15 ) * sizeof ( double ) );
+/*
+  Set the data values.
+*/
+  seed = 1973;
+
+  x = r8vec_uniform_01_new ( n, &seed );
+
+  r8vec_print_part ( n, x, 10, "  The original data:" );
+/*
+  Initialize the WSAVE array.
+*/
+  cosqi ( &n, wsave, ifac );
+/*
+  Compute the coefficients.
+*/
+  cosqf ( &n, x, wsave, ifac );
+
+  r8vec_print_part ( n, x, 10, "  The cosine coefficients:" );
+/*
+  Now compute inverse transform of coefficients.  Should get back the
+  original data.
+*/
+  cosqb ( &n, x, wsave, ifac );
+
+  for ( i = 0; i < n; i++ )
+  {
+    x[i] = x[i] / ( double ) ( 4 * n );
+  }
+
+  r8vec_print_part ( n, x, 10, "  The retrieved data:" );
+
+  free ( ifac );
+  free ( wsave );
+  free ( x );
+
+  return;
+}
+/******************************************************************************/
+
+void test03 ( )
+
+/******************************************************************************/
+/*
+  Purpose:
+
+    TEST03 tests COST, COSTI.
+
+  Licensing:
+
+    This code is distributed under the GNU LGPL license.
+
+  Modified:
+
+    21 May 2013
+
+  Author:
+
+    John Burkardt
+*/
+{
+  int i;
+  int *ifac;
+  int n = 4096;
+  int seed;
+  double *wsave;
+  double *x;
+
+  printf ( "\n" );
+  printf ( "TEST03\n" );
+  printf ( "  For real fast cosine transform,\n" );
+  printf ( "  COSTI initializes the transform.\n" );
+  printf ( "  COST does a forward or backward transform.\n" );
+  printf ( "\n" );
+  printf ( "  The number of data items is N = %d\n", n );
+/*
+  Set the data values.
+*/
+  seed = 1973;
+
+  x = r8vec_uniform_01_new ( n, &seed );
+
+  r8vec_print_part ( n, x, 10, "  The original data:" );
+/*
+  Initialize the WSAVE array.
+*/
+  wsave = ( double * ) malloc ( ( 3 * n + 15 ) * sizeof ( double ) );
+  ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
+
+  costi ( &n, wsave, ifac );
+/*
+  Compute the coefficients.
+*/
+  cost ( &n, x, wsave, ifac );
+
+  r8vec_print_part ( n, x, 10, "  The cosine coefficients:" );
+/*
+  Now compute inverse transform of coefficients.  Should get back the
+  original data.
+*/
+  cost ( &n, x, wsave, ifac );
+
+  for ( i = 0; i < n; i++ )
+  {
+    x[i] = x[i] / ( double ) ( 2 * ( n - 1 ) );
+  }
+
+  r8vec_print_part ( n, x, 10, "  The retrieved data:" );
+
+  free ( ifac );
+  free ( wsave );
+  free ( x );
+
+  return;
+}
+/******************************************************************************/
+
 void test04 ( )
 
 /******************************************************************************/
 /*
-  Purpose: TEST04 tests EZFFTB, EZFFTF, EZFFTI.
+  Purpose:
 
-  Licensing:  This code is distributed under the GNU LGPL license.
+    TEST04 tests EZFFTB, EZFFTF, EZFFTI.
 
-  Modified:  21 May 2013
+  Licensing:
 
-  Author:  John Burkardt
+    This code is distributed under the GNU LGPL license.
+
+  Modified:
+
+    21 May 2013
+
+  Author:
+
+    John Burkardt
 */
 {
   double *a;
@@ -102,6 +360,240 @@ void test04 ( )
 
   return;
 }
+/******************************************************************************/
+
+void test05 ( )
+
+/******************************************************************************/
+/*
+  Purpose:
+
+    TEST05 tests RFFTB, RFFTF and RFFTI.
+
+  Licensing:
+
+    This code is distributed under the GNU LGPL license.
+
+  Modified:
+
+    21 May 2013
+
+  Author:
+
+    John Burkardt
+*/
+{
+  int i;
+  int *ifac;
+  int n = 4096;
+  double *r;
+  int seed;
+  double *wsave;
+
+  printf ( "\n" );
+  printf ( "TEST05\n" );
+  printf ( "  For real fast cosine transforms,\n" );
+  printf ( "  RFFTI initializes the transform,\n" );
+  printf ( "  RFFTF does a forward transform;\n" );
+  printf ( "  RFFTB does a backward transform.\n" );
+  printf ( "\n" );
+  printf ( "  The number of data items is N = %d\n", n );
+/*
+  Set work vectors.
+*/
+  ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
+  wsave = ( double * ) malloc ( 2 * ( n + 1 ) * sizeof ( double ) );
+
+  rffti ( &n, wsave, ifac );
+/*
+  Set the data values.
+*/
+  seed = 1973;
+
+  r = r8vec_uniform_01_new ( n, &seed );
+
+  r8vec_print_part ( n, r, 10, "  The original data:" );
+/*
+  Compute the FFT coefficients.
+*/
+  rfftf ( &n, r, wsave, ifac );
+
+  r8vec_print_part ( n, r, 10, "  The FFT coefficients:" );
+/*
+  Compute inverse FFT of coefficients.  Should get back the
+  original data.
+*/
+  rfftb ( &n, r, wsave, ifac );
+
+  for ( i = 0; i < n; i++ )
+  {
+    r[i] = r[i] / ( double ) n;
+  }
+
+  r8vec_print_part ( n, r, 10, "  The retrieved data, divided by n:" );
+
+  free ( ifac );
+  free ( wsave );
+
+  return;
+}
+/******************************************************************************/
+
+void test06 ( )
+
+/******************************************************************************/
+/*
+  Purpose:
+
+    TEST06 tests SINQB, SINQF, SINQI.
+
+  Licensing:
+
+    This code is distributed under the GNU LGPL license.
+
+  Modified:
+
+    21 May 2013
+
+  Author:
+
+    John Burkardt
+*/
+{
+  int i;
+  int *ifac;
+  int n = 4096;
+  int seed;
+  double *wsave;
+  double *x;
+
+  printf ( "\n" );
+  printf ( "TEST06\n" );
+  printf ( "  For real fast sine quarter wave transform,\n" );
+  printf ( "  SINQI initializes the transform;\n" );
+  printf ( "  SINQF does a forward transform;\n" );
+  printf ( "  SINQB does a backward transform.\n" );
+  printf ( "\n" );
+  printf ( "  The number of data items is N = %d\n", n );
+/*
+  Set the data values.
+*/
+  seed = 1973;
+
+  x = r8vec_uniform_01_new ( n, &seed );
+
+  r8vec_print_part ( n, x, 10, "  The original data:" );
+/*
+  Initialize the WSAVE array.
+*/
+  ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
+  wsave = ( double * ) malloc ( 3 * ( n + 15 ) * sizeof ( double ) );
+
+  sinqi ( &n, wsave, ifac );
+/*
+  Compute the coefficients.
+*/
+  sinqf ( &n, x, wsave, ifac );
+
+  r8vec_print_part ( n, x, 10, "  The sine coefficients:" );
+/*
+  Now compute inverse transform of coefficients.  Should get back the
+  original data.
+*/
+  sinqb ( &n, x, wsave, ifac );
+
+  for ( i = 0; i < n; i++ )
+  {
+    x[i] = x[i] / ( double ) ( 4 * n );
+  }
+
+  r8vec_print_part ( n, x, 10, "  The retrieved data:" );
+
+  free ( ifac );
+  free ( wsave );
+  free ( x );
+
+  return;
+}
+/******************************************************************************/
+
+void test07 ( )
+
+/******************************************************************************/
+/*
+  Purpose:
+
+    TEST07 tests SINT, SINTI.
+
+  Licensing:
+
+    This code is distributed under the GNU LGPL license.
+
+  Modified:
+
+    21 May 2013
+
+  Author:
+
+    John Burkardt
+*/
+{
+  int i;
+  int *ifac;
+  int n = 4096;
+  int seed;
+  double *wsave;
+  double *x;
+
+  printf ( "\n" );
+  printf ( "TEST07\n" );
+  printf ( "  For real fast sine transform,\n" );
+  printf ( "  SINTI initializes the transform.\n" );
+  printf ( "  SINT does a forward or backward transform.\n" );
+  printf ( "\n" );
+  printf ( "  The number of data items is N = %d\n", n );
+/*
+  Set the data values.
+*/
+  seed = 1973;
+
+  x = r8vec_uniform_01_new ( n, &seed );
+
+  r8vec_print_part ( n, x, 10, "  The original data:" );
+/*
+  Initialize the WSAVE array.
+*/
+  wsave = ( double * ) malloc ( ( 3 * n + 15 ) * sizeof ( double ) );
+  ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
+
+  sinti ( &n, wsave, ifac );
+/*
+  Compute the coefficients.
+*/
+  sint ( &n, x, wsave, ifac );
+
+  r8vec_print_part ( n, x, 10, "  The cosine coefficients:" );
+/*
+  Now compute inverse transform of coefficients.  Should get back the
+  original data.
+*/
+  sint ( &n, x, wsave, ifac );
+
+  for ( i = 0; i < n; i++ )
+  {
+    x[i] = x[i] / ( double ) ( 2 * ( n + 1 ) );
+  }
+
+  r8vec_print_part ( n, x, 10, "  The retrieved data:" );
+
+  free ( ifac );
+  free ( wsave );
+  free ( x );
+
+  return;
+}
+/******************************************************************************/
+
 void r8vec_print_part ( int n, double a[], int max_print, char *title )
 
 /******************************************************************************/

@@ -87,19 +87,18 @@ void fftrec(double complex *c, double complex *f, int n, bool dir){
 }
 
 
-int main (){ //teste inicial
 
+void testeA (){
     int i, n,k,j = 0;
-    double pi = 3.1415926;
     n = 2;
     double complex *x = (double complex *)malloc(2*n * sizeof(double complex)); //x
     double complex *F = (double complex *)malloc(2*n * sizeof(double complex)); //F(x)
     double complex *c = (double complex *)malloc(2*n * sizeof(double complex)); //ck
 
     x[0] = 0;
-    x[1] = pi/2;
-    x[2] = pi;
-    x[3] = (3*pi)/2;
+    x[1] = M_PI/2; //pi na biblioteca math.h
+    x[2] = M_PI;
+    x[3] = (3*M_PI)/2;
 
     F[0] = 5;
     F[1] = -1;
@@ -113,20 +112,20 @@ int main (){ //teste inicial
 
     fourier(F, x, c, n); //calcula a transformada de fourier e coloca os ck's no vetor c
 
-    printf ("Teste a1) Transformada de Fourier de F(x)\n");
+    printf ("Teste a1) Transformada de Fourier de F(x)\n\n");
     printf ("F(x): \n");
     imprimeVetorComplx(F, 2*n);
     printf ("ck's: \n");
     imprimeVetorComplx(c, 2*n);
 
-    printf ("Teste a2) Antitransformada utilizando os coeficientes ck's: \n");
+    printf ("\nTeste a2) Antitransformada utilizando os coeficientes ck's: \n\n");
     double complex *F2 = (double complex *)malloc(2*n * sizeof(double complex));
     antiFourier(F2, x, c, n); //calcula a antitransformada de fourir e coloca os F(X) no vetor F2
     printf ("F(x): \n");
     imprimeVetorComplx(F2, 2*n);
 
 
-    printf ("Teste a3) Transformada utilizando FFT recursiva \n");
+    printf ("\nTeste a3) Transformada utilizando FFT recursiva \n\n");
     printf ("Ck's: \n");
     double complex *c2 = (double complex *)malloc(2*n * sizeof(double complex));
     fftrec(c2, F, n, 1);
@@ -136,17 +135,57 @@ int main (){ //teste inicial
     imprimeVetorComplx(c2, 2*n);
 
 
-    printf ("Teste a4) Antitransformada utilizando FFT recursiva \n");
+    printf ("\nTeste a4) Antitransformada utilizando FFT recursiva \n\n");
     printf ("F(x): \n");
     double complex *F3 = (double complex *)malloc(2*n * sizeof(double complex));
-    fftrec(F, c2, n, 0);
-    imprimeVetorComplx(F, 2*n);
+    fftrec(F3, c2, n, 0);
+    imprimeVetorComplx(F3, 2*n);
 
+    free(F);
+    free(F2);
+    free(F3);
+    free(c);
+    free(c2);
+}
 
-    n = 8;
-    double complex *xb = (double complex *)malloc(2*n * sizeof(double complex)); //x
-    double complex *Fb = (double complex *)malloc(2*n * sizeof(double complex)); //F(x)
-    double complex *cb = (double complex *)malloc(2*n * sizeof(double complex)); //ck
+void calcularX (double complex *x, int tam){ //calcula o vetor x a partir do tamanho do vetor
+
+    double complex delta_x = (2*M_PI)/tam;
+    int i;
+
+    x[0] = 0;
+    for (i=1;i<tam;i++){
+        x[i] = x[i-1] + delta_x;
+    }
+
+}
+
+void fttpack4Cks(double complex *c, double A0, double *A, double *B, int n){
+    /* ak = Ak + i*Bk */
+
+    double complex *ak = (double complex *)malloc(n * sizeof(double complex));
+
+    c[0] = A0;
+/*
+    for (int i=1; i<n;i++){
+
+    }*/
+
+/*    printf("to aqui moms \n");
+    imprimeVetorComplx(c, n);
+    printf("\n\n");*/
+
+}
+
+void testeB() {
+
+    int i, n,k,j = 0;
+    n = 4;
+    double complex *x = (double complex *)malloc(2*n * sizeof(double complex)); //x
+    double complex *F = (double complex *)malloc(2*n * sizeof(double complex)); //F(x)
+    double complex *c = (double complex *)malloc(2*n * sizeof(double complex)); //ck
+
+    calcularX(x, 8);
 
     F[0] = 6;
     F[1] = 2;
@@ -157,55 +196,143 @@ int main (){ //teste inicial
     F[6] = 8;
     F[7] = 8;
 
-    printf ("Teste b) Comparação com rotinas FFTPACK4 \n");
+    fourier(F, x, c, n); //calcula a transformada de fourier e coloca os ck's no vetor c
+
+    printf ("Teste b1) Transformada de Fourier de F(x)\n");
     printf ("F(x): \n");
+    imprimeVetorComplx(F, 2*n);
+    printf ("ck's: \n");
+    imprimeVetorComplx(c, 2*n);
+
+    printf ("Teste b2) Antitransformada utilizando os coeficientes ck's: \n");
+    double complex *F2 = (double complex *)malloc(2*n * sizeof(double complex));
+    antiFourier(F2, x, c, n); //calcula a antitransformada de fourir e coloca os F(X) no vetor F2
+    printf ("F(x): \n");
+    imprimeVetorComplx(F2, 2*n);
+
+    printf ("Teste b3) Transformada utilizando FFT recursiva \n");
+    printf ("Ck's: \n");
+    double complex *c2 = (double complex *)malloc(2*n * sizeof(double complex));
+    fftrec(c2, F, n, 1);
+    for (j=0;j<2*n;j++){   //dividir por 2n pra normalizar, faz caso for transformação direta
+        c2[j] = c2[j]/(2*n);
+    }
+    imprimeVetorComplx(c2, 2*n);
+
+    printf ("Teste b4) Antitransformada utilizando FFT recursiva \n");
+    printf ("F(x): \n");
+    double complex *F3 = (double complex *)malloc(2*n * sizeof(double complex));
+    fftrec(F3, c2, n, 0);
+    imprimeVetorComplx(F3, 2*n);
+
+    free(F);
+    free(F2);
+    free(F3);
+    free(c);
+    free(c2);
 
 
-    //test04();
+    //double *xb = (double *)malloc(2*n * sizeof(double)); //x
+    double *Fb = (double *)malloc(2*n * sizeof(double)); //F(x)
+    //double complex *cs = (double complex *)malloc(2*n * sizeof(double complex)); //ck
+
+
+    Fb[0] = 6;
+    Fb[1] = 2;
+    Fb[2] = 5;
+    Fb[3] = 2;
+    Fb[4] = 11;
+    Fb[5] = 2;
+    Fb[6] = 8;
+    Fb[7] = 8;
+
+    printf ("Teste b5) Transformada de Fourier utilizando a rotina do FFTPACK4 \n");
     double *a;//array de numeros reais contendo as partes reais dos coef. complexos de fourier,
                 //se n é impar, b tem tamanhao n/2, senao tamanho (n-1)/2
-
     double azero; //constante de fourier A0
     double *b; //array de numeros reais contendo as partes imaginarias dos coef. complexos de fourier,
                 //se n é impar, b tem tamanhao n/2, senao tamanho (n-1)/2
     int *ifac;
-    n = 8; //tamanho da sequencia
-    int nh; //tamanho de a e b, dependendo se n é par ou nao
-    //int seed;
     double *wsave; //work array inicializado pelo ezffti
-    double *xx = (double *)malloc(2*n * sizeof(double));
-
-    xx[0] = 6;
-    xx[1] = 2;
-    xx[2] = 5;
-    xx[3] = 2;
-    xx[4] = 11;
-    xx[5] = 2;
-    xx[6] = 8;
-    xx[7] = 8;
-
     wsave = ( double * ) malloc ( ( 3 * n + 15 ) * sizeof ( double ) );
     ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
-    ezffti ( &n, wsave, ifac );
-    imprimeVetorComplx(xx, 8);
-    //r8vec_print_part ( n, x, 10, "  The original data:" );
-    nh = n / 2;
-    a = ( double * ) malloc ( nh * sizeof ( double ) );
-    b = ( double * ) malloc ( nh * sizeof ( double ) );
-    ezfftf ( &n, xx, &azero, a, b, wsave, ifac );
-    printf ( "\n" );
-    printf ( "  The A0 coefficient:\n" );
-    printf ( "\n" );
-    printf ( "  %g\n", azero );
-    r8vec_print_part ( n/2, a, n, "  The A coefficients:" );
-    r8vec_print_part ( n/2, b, n, "  The B coefficients:" );
-    printf ( "\n" );
-    printf ( "  Retrieve data from FFT coeficients.\n" );
-    ezfftb ( &n, x, &azero, a, b, wsave, ifac );
-    r8vec_print_part ( n, x, n, " The retrieved data:" );
+    a = ( double * ) malloc ( (n/2) * sizeof ( double ) );
+    b = ( double * ) malloc ( (n/2) * sizeof ( double ) );
+    n=8;
 
-    timestamp();
+    r8vec_print_part ( n, Fb, n, "F(x)" );
 
+    ezffti ( &n, wsave, ifac ); //inicialização para funções a serem utilizadas
+
+    ezfftf ( &n, Fb, &azero, a, b, wsave, ifac ); //calculo da transformada
+
+    printf ( "\n" );
+    printf ( "  Coeficiente A0: %g \n", azero);
+    r8vec_print_part ( n/2, a, 10, "  Coeficientes A:" );
+    r8vec_print_part ( n/2, b, 10, "  Coeficientes B:" );
+    printf ( "\n" );
+
+    printf ("Teste b6) Antitransformada de Fourier utilizando a rotina do FFTPACK4 \n");
+    ezfftb ( &n, Fb, &azero, a, b, wsave, ifac );
+    r8vec_print_part ( n, Fb, n, " The retrieved data:" );
+
+ //  fttpack4Cks(c, azero,a, b, n);
+//    imprimeVetorComplx(c, n*2);
+
+
+
+}
+
+void testeC() {
+
+    int i, n,k,j = 0;
+    n = 1024/2;
+
+    double complex *x = (double complex *)malloc(2*n * sizeof(double complex));
+    double complex *F = (double complex *)malloc(2*n * sizeof(double complex));
+    double complex *c = (double complex *)malloc(2*n * sizeof(double complex));
+
+    calcularX(x, 2*n);
+
+    for (i=0;i<2*n;i++){
+        F[i] = 10*sin(x[i]) + 7*cos(30*x[i]) + 11*sin(352*x[i]) - 8*cos(711*x[i]);
+    }
+
+
+    fourier(F, x, c, n); //calcula a transformada de fourier e coloca os ck's no vetor c
+
+    printf ("Teste c1) Transformada de Fourier de F(x)\n");
+    printf ("F(x): \n");
+    imprimeVetorComplx(F, 2*n);
+    printf ("ck's: \n");
+    imprimeVetorComplx(c, 2*n);
+
+    printf ("Teste c2) Antitransformada utilizando os coeficientes ck's: \n");
+    double complex *F2 = (double complex *)malloc(2*n * sizeof(double complex));
+    antiFourier(F2, x, c, n); //calcula a antitransformada de fourir e coloca os F(X) no vetor F2
+    printf ("F(x): \n");
+    imprimeVetorComplx(F2, 2*n);
+
+    free(F);
+    free(c);
+    free(F2);
+
+}
+
+
+int main (){ //teste inicial
+
+    printf ("---- TESTE A ----  \n \n");
+    testeA();
+    system("pause");
+
+    printf ("---- TESTE B ----  \n \n");
+    testeB();
+    system("pause");
+
+    printf ("---- TESTE C ----  \n \n");
+    testeC();
+    system("pause");
 
 
     return 0;
