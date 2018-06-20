@@ -221,6 +221,23 @@ void compressao(double complex *c, double rate, int tam){
 
 }
 
+void fttpack4Cks(double complex *c, double A0, double *A, double *B, int n){
+    /* neste caso, n=2N;
+      tem-se que: c(k) = a(k), k=0,1,...,N e c(2N-k)= a(_k), k=1,...,N-1 */
+
+    c[0] = A0;
+    for(int i=0; i<(n/2); i++){
+        if ((i+1)!=n/2){
+            c[i+1] = A[i]/2 - I*B[i]/2;
+        } else {
+            c[i+1] = A[i] + I*B[i];
+        }
+    }
+    for(int i=1; i<=((n/2)-1); i++ ){
+        c[n-i] = A[i-1]/2 + I*B[i-1]/2;
+    }
+}
+
 void testeA (){
     int i, n,k,j = 0;
     n = 2;
@@ -298,8 +315,63 @@ void testeA (){
     free(F);
     free(F2);
     free(F3);
-    free(c);
     free(c2);
+
+    double *Fb = (double *)malloc(2*n * sizeof(double)); //F(x)
+    //(inicializa-se novamente, uma vez que FFTPACK trabalha com double* e não double complex*)
+    Fb[0] = 5;
+    Fb[1] = -1;
+    Fb[2] = 3;
+    Fb[3] = 1;
+    printf ("\nTeste a5) Transformada de Fourier utilizando a rotina do FFTPACK4 \n\n");
+    double *a;//array de numeros reais contendo as partes reais dos coef. complexos de fourier,
+                //se n é impar, b tem tamanhao n/2, senao tamanho (n-1)/2
+    double azero; //constante de fourier A0
+    double *b; //array de numeros reais contendo as partes imaginarias dos coef. complexos de fourier,
+                //se n é impar, b tem tamanhao n/2, senao tamanho (n-1)/2
+    int *ifac;
+    double *wsave; //work array inicializado pelo ezffti
+    wsave = ( double * ) malloc ( ( 3 * n + 15 ) * sizeof ( double ) );
+    ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
+    a = ( double * ) malloc ( (n/2) * sizeof ( double ) );
+    b = ( double * ) malloc ( (n/2) * sizeof ( double ) );
+    n=4;
+    gettimeofday(&tv1, NULL);
+    ezffti ( &n, wsave, ifac ); //inicialização para funções a serem utilizadas
+    gettimeofday(&tv2, NULL);
+    printf ("(tempo de execução para inicialização= %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
+    gettimeofday(&tv1, NULL);
+    ezfftf ( &n, Fb, &azero, a, b, wsave, ifac ); //calculo da transformada
+    gettimeofday(&tv2, NULL);
+
+    printf("\n--Saídas da função EZFFTF--\n");
+    printf ( "  Coeficiente A0: %g \n", azero);
+    printf ( "  Coeficientes Ak:\n");
+    imprimeVetorCoeficientes(a,n);
+    printf ( "  Coeficientes Bk:\n");
+    imprimeVetorCoeficientes(b,n);
+    printf ("(tempo de execução transformada= %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
+    gettimeofday(&tv1, NULL);
+    ezfftb ( &n, Fb, &azero, a, b, wsave, ifac ); //antitransformada
+    gettimeofday(&tv2, NULL);
+    fttpack4Cks(c, azero,a, b, n); //calculo dos ck a partir de ak e bk
+
+
+    printf("\nValores calculados de Ck: \n");
+    imprimeVetorComplx(c, n);
+    printf ("\nTeste a6) Antitransformada utilizando o FFTPACK4 \n");
+    printf ("F(x): \n");
+    imprimeVetor(Fb,n);
+    printf ("(tempo de execução= %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
+
+    free(Fb);
+    free(c);
 }
 
 void calcularX (double complex *x, int tam){ //calcula o vetor x a partir do tamanho do vetor
@@ -312,23 +384,6 @@ void calcularX (double complex *x, int tam){ //calcula o vetor x a partir do tam
         x[i] = x[i-1] + delta_x;
     }
 
-}
-
-void fttpack4Cks(double complex *c, double A0, double *A, double *B, int n){
-    /* neste caso, n=2N;
-      tem-se que: c(k) = a(k), k=0,1,...,N e c(2N-k)= a(_k), k=1,...,N-1 */
-
-    c[0] = A0;
-    for(int i=0; i<(n/2); i++){
-        if ((i+1)!=n/2){
-            c[i+1] = A[i]/2 - I*B[i]/2;
-        } else {
-            c[i+1] = A[i] + I*B[i];
-        }
-    }
-    for(int i=1; i<=((n/2)-1); i++ ){
-        c[n-i] = A[i-1]/2 + I*B[i-1]/2;
-    }
 }
 
 void testeB() {
@@ -472,7 +527,6 @@ void testeC() {
     double complex *c = (double complex *)malloc(2*n * sizeof(double complex));
     struct timeval  tv1, tv2; //utilizados para calcular temṕos de execução
 
-
     calcularX(x, 2*n);
 
     for (i=0;i<2*n;i++){
@@ -494,8 +548,58 @@ void testeC() {
     imprimeVetorComplx(F2, 2*n);
 
     free(F);
-    free(c);
     free(F2);
+    free(c);
+
+    double *Fb = (double *)malloc(2*n * sizeof(double)); //F(x)
+    //(inicializa-se novamente, uma vez que FFTPACK trabalha com double* e não double complex*)
+    for (i=0;i<2*n;i++){
+        Fb[i] = 10*sin(x[i]) + 7*cos(30*x[i]) + 11*sin(352*x[i]) - 8*cos(711*x[i]);
+    }
+    printf ("\nTeste c3) Transformada de Fourier utilizando a rotina do FFTPACK4 \n\n");
+    double *a;//array de numeros reais contendo as partes reais dos coef. complexos de fourier,
+                //se n é impar, b tem tamanhao n/2, senao tamanho (n-1)/2
+    double complex *cb = (double complex *)malloc(2*n * sizeof(double complex));
+    double azero; //constante de fourier A0
+    double *b; //array de numeros reais contendo as partes imaginarias dos coef. complexos de fourier,
+                //se n é impar, b tem tamanhao n/2, senao tamanho (n-1)/2
+    int *ifac;
+    double *wsave; //work array inicializado pelo ezffti
+    wsave = ( double * ) malloc ( ( 3 * n + 15 ) * sizeof ( double ) );
+    ifac = ( int * ) malloc ( 8 * sizeof ( int ) );
+    a = ( double * ) malloc ( (n/2) * sizeof ( double ) );
+    b = ( double * ) malloc ( (n/2) * sizeof ( double ) );
+    n=1024;
+    gettimeofday(&tv1, NULL);
+    ezffti ( &n, wsave, ifac ); //inicialização para funções a serem utilizadas
+    gettimeofday(&tv2, NULL);
+    printf ("(tempo de execução para inicialização= %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
+
+    gettimeofday(&tv1, NULL);
+    ezfftf ( &n, Fb, &azero, a, b, wsave, ifac ); //calculo da transformada
+    gettimeofday(&tv2, NULL);
+    printf ("(tempo de execução transformada= %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
+
+    gettimeofday(&tv1, NULL);
+    ezfftb ( &n, Fb, &azero, a, b, wsave, ifac ); //antitransformada
+    gettimeofday(&tv2, NULL);
+    fttpack4Cks(cb, azero,a, b, n); //calculo dos ck a partir de ak e bk
+
+    printf("\nValores calculados de Ck: \n");
+    imprimeVetorComplx(cb, n);
+    printf ("\nTeste c6) Antitransformada utilizando o FFTPACK4 \n");
+    printf ("F(x): \n");
+    imprimeVetor(Fb,n);
+    printf ("(tempo de execução= %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
+
+    free(Fb);
+
 }
 
 void programa1(int programa, int K, double e){
@@ -506,7 +610,7 @@ void programa1(int programa, int K, double e){
 
     gettimeofday(&tv2, NULL);
 
-    
+
     printf ("(tempo de execução= %f segundos)\n",
           (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
           (double) (tv2.tv_sec - tv1.tv_sec));
@@ -530,9 +634,9 @@ int main (){
     printf ("\n---- TESTE B ----  \n \n");
     testeB();
     system("pause");
-    /*printf ("\n---- TESTE C ----  \n \n");
+    printf ("\n---- TESTE C ----  \n \n");
     testeC();
-    system("pause");*/
+    system("pause");
 
     printf("\n\n------Testes de análise sonora------\n");
     printf ("\n---- TESTE 1: análise ----  \n \n");
