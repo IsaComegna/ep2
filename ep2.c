@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include "fftpack4.h"
 
 
@@ -96,6 +97,9 @@ void fftrec(double complex *c, double complex *f, int n, bool dir){
            c[j+n] = even[j]-eij*odd[j];
        }
    }
+
+
+
 }
 
 void pegarDados(double complex *c1, double complex *c2, double complex *x, int tam, char *nome, int *ncanais, int *sampleRate){ //pega os dados do arquivo de dados e preenche x, c1, c2 e armazena ncanais e sampleRate
@@ -223,6 +227,7 @@ void testeA (){
     double complex *x = (double complex *)malloc(2*n * sizeof(double complex)); //x
     double complex *F = (double complex *)malloc(2*n * sizeof(double complex)); //F(x)
     double complex *c = (double complex *)malloc(2*n * sizeof(double complex)); //ck
+    struct timeval  tv1, tv2; //utilizados para calcular temṕos de execução
 
     x[0] = 0;
     x[1] = M_PI/2; //pi na biblioteca math.h
@@ -239,36 +244,56 @@ void testeA (){
     c[2] = 0;
     c[3] = 0;
 
+    gettimeofday(&tv1, NULL);
     fourier(F, x, c, n); //calcula a transformada de fourier e coloca os ck's no vetor c
+    gettimeofday(&tv2, NULL);
 
     printf ("Teste a1) Transformada de Fourier de F(x)\n\n");
     printf ("F(x):\n");
     imprimeVetorComplx(F, 2*n);
     printf ("\nValores de Ck:\n");
     imprimeVetorComplx(c, 2*n);
+    printf ("(tempo de execução = %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
 
     printf ("\nTeste a2) Antitransformada utilizando os coeficientes ck's: \n\n");
     double complex *F2 = (double complex *)malloc(2*n * sizeof(double complex));
+    gettimeofday(&tv1, NULL);
     antiFourier(F2, x, c, n); //calcula a antitransformada de fourir e coloca os F(X) no vetor F2
+    gettimeofday(&tv2, NULL);
     printf ("F(x): \n");
     imprimeVetorComplx(F2, 2*n);
+    printf ("(tempo de execução = %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
 
 
     printf ("\nTeste a3) Transformada utilizando FFT recursiva \n\n");
     printf ("Valores de Ck:\n");
     double complex *c2 = (double complex *)malloc(2*n * sizeof(double complex));
+    gettimeofday(&tv1, NULL);
     fftrec(c2, F, n, 1);
+    gettimeofday(&tv2, NULL);
     for (j=0;j<2*n;j++){   //dividir por 2n pra normalizar, faz caso for transformação direta
         c2[j] = c2[j]/(2*n);
     }
     imprimeVetorComplx(c2, 2*n);
+    printf ("(tempo de execução = %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
 
 
     printf ("\nTeste a4) Antitransformada utilizando FFT recursiva \n\n");
     printf ("F(x): \n");
     double complex *F3 = (double complex *)malloc(2*n * sizeof(double complex));
+    gettimeofday(&tv1, NULL);
     fftrec(F3, c2, n, 0);
+    gettimeofday(&tv2, NULL);
     imprimeVetorComplx(F3, 2*n);
+    printf ("(tempo de execução = %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
 
     free(F);
     free(F2);
@@ -313,7 +338,7 @@ void testeB() {
     double complex *x = (double complex *)malloc(2*n * sizeof(double complex)); //x
     double complex *F = (double complex *)malloc(2*n * sizeof(double complex)); //F(x)
     double complex *c = (double complex *)malloc(2*n * sizeof(double complex)); //ck
-
+    struct timeval  tv1, tv2; //utilizados para calcular temṕos de execução
     calcularX(x, 8);
 
     F[0] = 6;
@@ -325,35 +350,53 @@ void testeB() {
     F[6] = 8;
     F[7] = 8;
 
-
+    gettimeofday(&tv1, NULL);
     fourier(F, x, c, n); //calcula a transformada de fourier e coloca os ck's no vetor c
-
+    gettimeofday(&tv2, NULL);
     printf ("Teste b1) Transformada de Fourier de F(x)\n\n");
     printf ("F(x): \n");
     imprimeVetorComplx(F, 2*n);
     printf ("\nValores de Ck:\n");
     imprimeVetorComplx(c, 2*n);
+    printf ("(tempo de execução = %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
 
     printf ("\nTeste b2) Antitransformada utilizando os coeficientes ck: \n\n");
     double complex *F2 = (double complex *)malloc(2*n * sizeof(double complex));
+    gettimeofday(&tv1, NULL);
     antiFourier(F2, x, c, n); //calcula a antitransformada de fourir e coloca os F(X) no vetor F2
+    gettimeofday(&tv2, NULL);
     printf ("F(x): \n");
     imprimeVetorComplx(F2, 2*n);
+    printf ("(tempo de execução = %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
 
     printf ("\nTeste b3) Transformada utilizando FFT recursiva \n\n");
     printf ("Valores de Ck:\n");
     double complex *c2 = (double complex *)malloc(2*n * sizeof(double complex));
+    gettimeofday(&tv1, NULL);
     fftrec(c2, F, n, 1);
+    gettimeofday(&tv2, NULL);
     for (j=0;j<2*n;j++){   //dividir por 2n pra normalizar, faz caso for transformação direta
         c2[j] = c2[j]/(2*n);
     }
     imprimeVetorComplx(c2, 2*n);
+    printf ("(tempo de execução = %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
 
     printf ("\nTeste b4) Antitransformada utilizando FFT recursiva \n\n");
     printf ("F(x):\n");
     double complex *F3 = (double complex *)malloc(2*n * sizeof(double complex));
+    gettimeofday(&tv1, NULL);
     fftrec(F3, c2, n, 0);
+    gettimeofday(&tv2, NULL);
     imprimeVetorComplx(F3, 2*n);
+    printf ("(tempo de execução = %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
 
     free(F);
     free(F2);
@@ -383,39 +426,52 @@ void testeB() {
     a = ( double * ) malloc ( (n/2) * sizeof ( double ) );
     b = ( double * ) malloc ( (n/2) * sizeof ( double ) );
     n=8;
-
+    gettimeofday(&tv1, NULL);
     ezffti ( &n, wsave, ifac ); //inicialização para funções a serem utilizadas
+    gettimeofday(&tv2, NULL);
+    printf ("(tempo de execução para inicialização= %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
+    gettimeofday(&tv1, NULL);
     ezfftf ( &n, Fb, &azero, a, b, wsave, ifac ); //calculo da transformada
+    gettimeofday(&tv2, NULL);
 
-    printf ( "\n" );
-    printf("--Saídas da função EZFFTF--\n\n");
+    printf("\n--Saídas da função EZFFTF--\n");
     printf ( "  Coeficiente A0: %g \n", azero);
     printf ( "  Coeficientes Ak:\n");
     imprimeVetorCoeficientes(a,n);
     printf ( "  Coeficientes Bk:\n");
     imprimeVetorCoeficientes(b,n);
-
+    printf ("(tempo de execução transformada= %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
+    gettimeofday(&tv1, NULL);
     ezfftb ( &n, Fb, &azero, a, b, wsave, ifac ); //antitransformada
+    gettimeofday(&tv2, NULL);
     fttpack4Cks(c, azero,a, b, n); //calculo dos ck a partir de ak e bk
+
 
     printf("\nValores calculados de Ck: \n");
     imprimeVetorComplx(c, n);
     printf ("\nTeste b6) Antitransformada utilizando o FFTPACK4 \n");
     printf ("F(x): \n");
     imprimeVetor(Fb,n);
+    printf ("(tempo de execução= %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
 
     free(Fb);
     free(c);
 }
 
 void testeC() {
-
     int i, n,k,j = 0;
     n = 1024/2;
-
     double complex *x = (double complex *)malloc(2*n * sizeof(double complex));
     double complex *F = (double complex *)malloc(2*n * sizeof(double complex));
     double complex *c = (double complex *)malloc(2*n * sizeof(double complex));
+    struct timeval  tv1, tv2; //utilizados para calcular temṕos de execução
+
 
     calcularX(x, 2*n);
 
@@ -442,9 +498,27 @@ void testeC() {
     free(F2);
 }
 
+void programa1(int programa, int K, double e){
+    struct timeval  tv1, tv2; //utilizados para calcular temṕos de execução
+
+    gettimeofday(&tv1, NULL);
+    printf("Aqui dentro!");
+
+    gettimeofday(&tv2, NULL);
+
+    
+    printf ("(tempo de execução= %f segundos)\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
+}
+
 
 int main (){
-    int p, t;
+    int p, t, k;
+    double e;
+    struct timeval  tv1, tv2;
+    gettimeofday(&tv1, NULL);
+
 
     printf("\n\n-------------------------------------------------------------");
     printf("\n                 Programa de análise de Fourier");
@@ -471,7 +545,6 @@ int main (){
     //teste4();
     printf ("\n---- TESTE 5: outros desafios ----  \n \n");
     //teste5();
-
 
     printf("\n------Análise de Fourier de Sinais sonoros------");
     printf("\nDigite o número do programa da lista que queira analisar:\n");
@@ -505,8 +578,29 @@ int main (){
         scanf("%d", &t);
     }
 
-    printf("\nEscolha os parâmetros de filtro/compressão:\n");
-    printf("Parâmetro do filtro:\n");
+    printf("\nEscolha o parâmetro de filtro:\n");
+    printf("K= ");
+    scanf("%d", &k);
+    printf("\nEscolha o parâmetro de compressão (utilize . como vírgula):\n");
+    printf("E= ");
+    scanf("%le", &e);
+
+    //colocar escolha de parametros certinho
+
+    if (t==1){
+        programa1(p, k, e);
+    } /*else if (t==2){
+        programa2(p);
+    } else{
+        programa3(p);
+    }*/
+
+    gettimeofday(&tv2, NULL);
+    printf ("\n\nTempo total de execução do programa = %f segundos\n",
+          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+          (double) (tv2.tv_sec - tv1.tv_sec));
+
+
 
     return 0;
 }
