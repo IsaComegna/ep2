@@ -16,14 +16,19 @@ void imprimeVetor (double *vetor, int n){ //imprime vetor de tamanho n;
 void imprimeVetorCoeficientes (double *vetor, int n){ //imprime vetor de tamanho n;
     int i;
     for (i=0;i<n;i++){
-        printf ("   %d: %lf \n", i, vetor[i]);
+        printf ("     %d: %lf \n", i, vetor[i]);
     }
 }
 
 void imprimeVetorComplx(double complex *vetor, int n){ //imprime um vetor de complexos de tamanho n;
     int i;
     for (i=0;i<n;i++){
-        printf ("%d: %lf + j%lf \n", i, creal(vetor[i]), cimag(vetor[i]) );
+        if(cimag(vetor[i]) < 0){
+            printf("%d: %lf - j%lf \n", i, creal(vetor[i]), fabs(cimag(vetor[i])));
+        }
+        else{
+            printf ("%d: %lf + j%lf \n", i, creal(vetor[i]), cimag(vetor[i]) );
+        }
     }
 }
 
@@ -237,9 +242,9 @@ void testeA (){
     fourier(F, x, c, n); //calcula a transformada de fourier e coloca os ck's no vetor c
 
     printf ("Teste a1) Transformada de Fourier de F(x)\n\n");
-    printf ("F(x): \n");
+    printf ("F(x):\n");
     imprimeVetorComplx(F, 2*n);
-    printf ("ck's: \n");
+    printf ("\nValores de Ck:\n");
     imprimeVetorComplx(c, 2*n);
 
     printf ("\nTeste a2) Antitransformada utilizando os coeficientes ck's: \n\n");
@@ -250,7 +255,7 @@ void testeA (){
 
 
     printf ("\nTeste a3) Transformada utilizando FFT recursiva \n\n");
-    printf ("Ck's: \n");
+    printf ("Valores de Ck:\n");
     double complex *c2 = (double complex *)malloc(2*n * sizeof(double complex));
     fftrec(c2, F, n, 1);
     for (j=0;j<2*n;j++){   //dividir por 2n pra normalizar, faz caso for transformação direta
@@ -323,20 +328,20 @@ void testeB() {
 
     fourier(F, x, c, n); //calcula a transformada de fourier e coloca os ck's no vetor c
 
-    printf ("Teste b1) Transformada de Fourier de F(x)\n");
+    printf ("Teste b1) Transformada de Fourier de F(x)\n\n");
     printf ("F(x): \n");
     imprimeVetorComplx(F, 2*n);
-    printf ("ck's: \n");
+    printf ("\nValores de Ck:\n");
     imprimeVetorComplx(c, 2*n);
 
-    printf ("Teste b2) Antitransformada utilizando os coeficientes ck's: \n");
+    printf ("\nTeste b2) Antitransformada utilizando os coeficientes ck: \n\n");
     double complex *F2 = (double complex *)malloc(2*n * sizeof(double complex));
     antiFourier(F2, x, c, n); //calcula a antitransformada de fourir e coloca os F(X) no vetor F2
     printf ("F(x): \n");
     imprimeVetorComplx(F2, 2*n);
 
-    printf ("Teste b3) Transformada utilizando FFT recursiva \n");
-    printf ("Ck's: \n");
+    printf ("\nTeste b3) Transformada utilizando FFT recursiva \n\n");
+    printf ("Valores de Ck:\n");
     double complex *c2 = (double complex *)malloc(2*n * sizeof(double complex));
     fftrec(c2, F, n, 1);
     for (j=0;j<2*n;j++){   //dividir por 2n pra normalizar, faz caso for transformação direta
@@ -344,8 +349,8 @@ void testeB() {
     }
     imprimeVetorComplx(c2, 2*n);
 
-    printf ("Teste b4) Antitransformada utilizando FFT recursiva \n");
-    printf ("F(x): \n");
+    printf ("\nTeste b4) Antitransformada utilizando FFT recursiva \n\n");
+    printf ("F(x):\n");
     double complex *F3 = (double complex *)malloc(2*n * sizeof(double complex));
     fftrec(F3, c2, n, 0);
     imprimeVetorComplx(F3, 2*n);
@@ -365,7 +370,7 @@ void testeB() {
     Fb[5] = 2;
     Fb[6] = 8;
     Fb[7] = 8;
-    printf ("Teste b5) Transformada de Fourier utilizando a rotina do FFTPACK4 \n");
+    printf ("\nTeste b5) Transformada de Fourier utilizando a rotina do FFTPACK4 \n\n");
     double *a;//array de numeros reais contendo as partes reais dos coef. complexos de fourier,
                 //se n é impar, b tem tamanhao n/2, senao tamanho (n-1)/2
     double azero; //constante de fourier A0
@@ -378,15 +383,12 @@ void testeB() {
     a = ( double * ) malloc ( (n/2) * sizeof ( double ) );
     b = ( double * ) malloc ( (n/2) * sizeof ( double ) );
     n=8;
-    printf("F(X):\n");
-    imprimeVetor(Fb,n);
 
     ezffti ( &n, wsave, ifac ); //inicialização para funções a serem utilizadas
     ezfftf ( &n, Fb, &azero, a, b, wsave, ifac ); //calculo da transformada
 
-
     printf ( "\n" );
-    printf("--Saídas da função EZFFTF--\n");
+    printf("--Saídas da função EZFFTF--\n\n");
     printf ( "  Coeficiente A0: %g \n", azero);
     printf ( "  Coeficientes Ak:\n");
     imprimeVetorCoeficientes(a,n);
@@ -396,9 +398,9 @@ void testeB() {
     ezfftb ( &n, Fb, &azero, a, b, wsave, ifac ); //antitransformada
     fttpack4Cks(c, azero,a, b, n); //calculo dos ck a partir de ak e bk
 
-    printf("ck's calculados: \n");
+    printf("\nValores calculados de Ck: \n");
     imprimeVetorComplx(c, n);
-    printf ("\nTeste b6) Antitransformada de Fourier utilizando a rotina do FFTPACK4 \n");
+    printf ("\nTeste b6) Antitransformada utilizando o FFTPACK4 \n");
     printf ("F(x): \n");
     imprimeVetor(Fb,n);
 
@@ -472,7 +474,7 @@ int main (){
 
 
     printf("\n------Análise de Fourier de Sinais sonoros------");
-    printf("\nDigite o numero do programa da lista que queira analisar:\n");
+    printf("\nDigite o número do programa da lista que queira analisar:\n");
     printf("1. demicheligeminiani\n");
     printf("2. dog\n");
     printf("3.hanks_apollo_problem\n");
@@ -491,7 +493,7 @@ int main (){
         scanf("%d", &p);
     }
 
-    printf("\nOpções de transformadas a serem realizadas:\n");
+    printf("\nDigite o número da opção da lista de transformadas que queira utilizar:\n");
     printf("1. Transformada direta\n");
     printf("2. Transformada direta recursiva\n");
     printf("3. Transformada direta do pacote FFTPACK4\n");
