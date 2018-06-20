@@ -93,7 +93,6 @@ void fftrec(double complex *c, double complex *f, int n, bool dir){
    }
 }
 
-
 void pegarDados(double complex *c1, double complex *c2, double complex *x, int tam, char *nome, int *ncanais, int *sampleRate){ //pega os dados do arquivo de dados e preenche x, c1, c2 e armazena ncanais e sampleRate
 
     FILE *arq = fopen (nome, "r");
@@ -354,11 +353,9 @@ void testeB() {
     free(F);
     free(F2);
     free(F3);
-    free(c);
     free(c2);
 
-
-double *Fb = (double *)malloc(2*n * sizeof(double)); //F(x)
+    double *Fb = (double *)malloc(2*n * sizeof(double)); //F(x)
     //(inicializa-se novamente, uma vez que FFTPACK trabalha com double* e não double complex*)
     Fb[0] = 6;
     Fb[1] = 2;
@@ -405,6 +402,8 @@ double *Fb = (double *)malloc(2*n * sizeof(double)); //F(x)
     printf ("F(x): \n");
     imprimeVetor(Fb,n);
 
+    free(Fb);
+    free(c);
 }
 
 void testeC() {
@@ -421,7 +420,6 @@ void testeC() {
     for (i=0;i<2*n;i++){
         F[i] = 10*sin(x[i]) + 7*cos(30*x[i]) + 11*sin(352*x[i]) - 8*cos(711*x[i]);
     }
-
 
     fourier(F, x, c, n); //calcula a transformada de fourier e coloca os ck's no vetor c
 
@@ -440,24 +438,73 @@ void testeC() {
     free(F);
     free(c);
     free(F2);
-
 }
 
 
-int main (){ //teste inicial
+int main (){
+    int p, t;
 
-    printf ("---- TESTE A ----  \n \n");
+    printf("\n\n-------------------------------------------------------------");
+    printf("\n                 Programa de análise de Fourier");
+    printf("\n-------------------------------------------------------------");
+    printf("\n\n------Testes iniciais------\n");
+    printf ("\n---- TESTE A ----  \n \n");
     testeA();
     system("pause");
-
-    printf ("---- TESTE B ----  \n \n");
+    printf ("\n---- TESTE B ----  \n \n");
     testeB();
     system("pause");
-/*
-    printf ("---- TESTE C ----  \n \n");
+    /*printf ("\n---- TESTE C ----  \n \n");
     testeC();
     system("pause");*/
 
+    printf("\n\n------Testes de análise sonora------\n");
+    printf ("\n---- TESTE 1: análise ----  \n \n");
+    //teste1();
+    printf ("\n---- TESTE 2: filtro passa baixa ----  \n \n");
+    //teste2();
+    printf ("\n---- TESTE 3: filtro passa alta ----  \n \n");
+    //teste3();
+    printf ("\n---- TESTE 4: compressão ----  \n \n");
+    //teste4();
+    printf ("\n---- TESTE 5: outros desafios ----  \n \n");
+    //teste5();
+
+
+    printf("\n------Análise de Fourier de Sinais sonoros------");
+    printf("\nDigite o numero do programa da lista que queira analisar:\n");
+    printf("1. demicheligeminiani\n");
+    printf("2. dog\n");
+    printf("3.hanks_apollo_problem\n");
+    printf("4. piano-sol\n");
+    printf("5. plane\n");
+    printf("6. string-guitar-c4\n");
+    printf("7. terminator\n");
+    printf("8. the_force\n");
+    printf("9. treesparrow\n");
+    printf("10.trig\n");
+    printf("\nnúmero: ");
+    scanf("%d", &p);
+    while (p>10 || p<=0){
+        printf("Entrada não é uma opção válida.");
+        printf("\nnúmero: ");
+        scanf("%d", &p);
+    }
+
+    printf("\nOpções de transformadas a serem realizadas:\n");
+    printf("1. Transformada direta\n");
+    printf("2. Transformada direta recursiva\n");
+    printf("3. Transformada direta do pacote FFTPACK4\n");
+    printf("\nnúmero da opção escolhida: ");
+    scanf("%d", &t);
+    while (t>3 || t<=0){
+        printf("Entrada não é uma opção válida.");
+        printf("\nnúmero da opção escolhida: ");
+        scanf("%d", &t);
+    }
+
+    printf("\nEscolha os parâmetros de filtro/compressão:\n");
+    printf("Parâmetro do filtro:\n");
 
     return 0;
 }
